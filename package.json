@@ -1,0 +1,27 @@
+{
+  "name": "tsparsec",
+  "description": "tsparsec",
+  "author": "wiinuk",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": "wiinuk/tsparsec",
+  "main": "lib/tsparsec",
+  "types": "lib/tsparsec",
+  "dependencies": {
+    "wiinuk-extensions": "^0.0.3"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^8.0.27",
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0",
+    "typescript": "^2.5.2"
+  },
+  "scripts": {
+    "prepublish": "npm run test && npm run compile",
+    "compile": "tsc --project .",
+    "watch": "tsc --watch --project .",
+    "test": "tsc --project tsconfig.test.json && mocha lib.test/test/**/*.js"
+  }
+}
