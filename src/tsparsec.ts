@@ -50,6 +50,7 @@ export interface Combinator<E, T> {
     left<U>(right: Combinator<E, U>): Combinator<E, T>
     right<U>(right: Combinator<E, U>): Combinator<E, U>
     map<U>(mapping: (value: T) => U): Combinator<E, U>
+    return<U>(value: U): Combinator<E, U>
 
     parse(this: Combinator<CodePoint, T>, string: string, source?: Nullable<string>): T
     parse(array: ReadonlyArray<E>, source?: Nullable<string>): T
@@ -287,6 +288,7 @@ class CombinatorDefaults<E, T> implements Combinator<E, T> {
     left<T2>(parser2: Combinator<E, T2>) { return extend(left(this.parser, parser2.parser)) }
     right<T2>(parser2: Combinator<E, T2>) { return extend(right(this.parser, parser2.parser)) }
     map<U>(mapping: (x: T) => U) { return extend(map(this.parser, mapping)) }
+    return<U>(value: U) { return extend(returnP(this.parser, value)) }
 
     parse(this: Combinator<CodePoint, T>, string: string, source?: Nullable<string>): T
     parse(array: ReadonlyArray<E>, source?: Nullable<string>): T
@@ -303,7 +305,7 @@ export function extend<E, T>(parser: Parser<E, T>): Combinator<E, T> {
 
 // combinators
 
-export function skipSeq<E = DefaultElement>(...parsers: Combinator<E, mixed>[]) {
+export function skipPipe<E = DefaultElement>(...parsers: Combinator<E, mixed>[]) {
     return extend<E, null>(stream => {
         for (let i = 0; i < parsers.length; i++) {
             parsers[i].parser(stream)
