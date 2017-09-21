@@ -1,4 +1,4 @@
-import { Optional, Array1, mixed, CodePoint } from "wiinuk-extensions"
+import { Optional, Array1, mixed, CodePoint, Nullable } from "wiinuk-extensions"
 import * as ex from "wiinuk-extensions"
 
 
@@ -47,66 +47,12 @@ export type Parser<E, T> = (stream: Stream<E>) => T
 export interface Combinator<E, T> {
     readonly parser: Parser<E, T>
 
-    many0(): Combinator<E, T[]>
-    many1(): Combinator<E, Array1<T>>
-    skipMany0(): Combinator<E, null>
-    skipMany1(): Combinator<E, null>
-    many1Fold<U>(init: () => U, folder: (state: U, value: T) => U): Combinator<E, U>
-    sepBy0<U>(sep: Combinator<E, U>): Combinator<E, T[]>
-    sepBy1<U>(sep: Combinator<E, U>): Combinator<E, Array1<T>>
-    skipSepBy1<U>(sep: Combinator<E, U>): Combinator<E, null>
-
     left<U>(right: Combinator<E, U>): Combinator<E, T>
     right<U>(right: Combinator<E, U>): Combinator<E, U>
-    notFollowedBy(): Combinator<E, null>
     map<U>(mapping: (value: T) => U): Combinator<E, U>
-    opt(): Combinator<E, Optional<T>>
 
-    // ```F#
-    //for i in 0..15 do
-    //    let m f = {1..i} |> Seq.map ((+) 1 >> f) |> String.concat "" 
-    //    let f = sprintf >> m
-    //    printfn "    pipe<%sU>(%smapping: (x1: T%s) => U): Combinator<E, U>"
-    //        (f "T%d, ") (m <| fun n -> sprintf "parser%d: Combinator<E, T%d>, " n n)
-    //        (m <| fun n -> sprintf ", x%d: T%d" n n)
-    // ```
-    pipe<U>(mapping: (x1: T) => U): Combinator<E, U>
-    pipe<T2, U>(parser2: Combinator<E, T2>, mapping: (x1: T, x2: T2) => U): Combinator<E, U>
-    pipe<T2, T3, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, mapping: (x1: T, x2: T2, x3: T3) => U): Combinator<E, U>
-    pipe<T2, T3, T4, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, mapping: (x1: T, x2: T2, x3: T3, x4: T4) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14, x15: T15) => U): Combinator<E, U>
-    pipe<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, U>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, parser16: Combinator<E, T16>, mapping: (x1: T, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14, x15: T15, x16: T16) => U): Combinator<E, U>
-
-    // ```F#
-    // for i in 0..15 do
-    //     let g sep f = {1..i} |> Seq.map ((+) 1 >> f) |> String.concat sep
-    //     printfn "    tuple%s(%s): Combinator<E, [T%s]>"
-    //         (if i = 0 then "" else sprintf "<%s>" <| g ", " (sprintf "T%d"))
-    //         (g ", " <| fun n -> sprintf "parser%d: Combinator<E, T%d>" n n)
-    //         (g "" <| sprintf ", T%d")
-    // ```
-    tuple(): Combinator<E, [T]>
-    tuple<T2>(parser2: Combinator<E, T2>): Combinator<E, [T, T2]>
-    tuple<T2, T3>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>): Combinator<E, [T, T2, T3]>
-    tuple<T2, T3, T4>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>): Combinator<E, [T, T2, T3, T4]>
-
-    return<U>(value: U): Combinator<E, U>
-
-    skipped(this: Combinator<CodePoint, T>): Combinator<CodePoint, string>
-    manyChars0(this: Combinator<E, CodePoint>): Combinator<E, string>
-
-    run(this: Combinator<E, T>, source: ReadonlyArray<E>): T
-    runString(this: Combinator<CodePoint, T>, string: string, source?: string | null): T
+    parse(this: Combinator<CodePoint, T>, string: string, source?: Nullable<string>): T
+    parse(array: ReadonlyArray<E>, source?: Nullable<string>): T
 }
 
 export function error<E>(message: string, stream: Stream<E>, position = stream.position, line = stream.line, column = stream.column): never {
@@ -138,7 +84,7 @@ function parseOpt<E, T>(parser: Parser<E, T>, stream: Stream<E>) {
 function map<E, T, U>(p: Parser<E, T>, mapping: (value: T) => U): Parser<E, U> {
     return stream => mapping(p(stream))
 }
-function opt<E, T extends {} | null>(p: Parser<E, T>): Parser<E, Optional<T>> {
+function optP<E, T extends {} | null>(p: Parser<E, T>): Parser<E, Optional<T>> {
     return stream => parseOpt(p, stream)
 }
 
@@ -155,13 +101,13 @@ function pipeAny<E, T, U>(parsers: ArrayLike<Parser<E, T>>, mapping: (...xs: T[]
         return mapping(...results)
     }
 }
-function tupleAny<E, T>(parsers: ReadonlyArray<Parser<E,T>>): Parser<E, T[]> {
+function tupleAny<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T[]> {
     return stream => parsers.map(p => p(stream))
 }
-function pipe<E, T1, T2, U, S, R1,R2>(p1: Parser<E, T1>, p2: Parser<E, T2>, mapping: (x1: T1, x2: T2) => U): Parser<E, U>
-function pipe<E, T1, T2, T3, U, S, R1,R2,R3>(p1: Parser<E, T1>, p2: Parser<E, T2>, p3: Parser<E, T3>, mapping: (x1: T1, x2: T2, x3: T3) => U): Parser<E, U>
-function pipe<E, T1, T2, T3, T4, U, S, R1,R2,R3,R4>(p1: Parser<E, T1>, p2: Parser<E, T2>, p3: Parser<E, T3>, p4: Parser<E, T4>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4) => U): Parser<E, U>
-function pipe<E, T, U>(...parserOrMappings: (Parser<E, T> | ((...xs: T[]) => U))[]): Parser<E, U> {
+function pipeP<E, T1, T2, U, S, R1, R2>(p1: Parser<E, T1>, p2: Parser<E, T2>, mapping: (x1: T1, x2: T2) => U): Parser<E, U>
+function pipeP<E, T1, T2, T3, U, S, R1, R2, R3>(p1: Parser<E, T1>, p2: Parser<E, T2>, p3: Parser<E, T3>, mapping: (x1: T1, x2: T2, x3: T3) => U): Parser<E, U>
+function pipeP<E, T1, T2, T3, T4, U, S, R1, R2, R3, R4>(p1: Parser<E, T1>, p2: Parser<E, T2>, p3: Parser<E, T3>, p4: Parser<E, T4>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4) => U): Parser<E, U>
+function pipeP<E, T, U>(...parserOrMappings: (Parser<E, T> | ((...xs: T[]) => U))[]): Parser<E, U> {
     const mapping = parserOrMappings.pop() as (...xs: T[]) => U
     const parsers = parserOrMappings as Parser<E, T>[]
     return pipeAny(parsers, mapping)
@@ -173,7 +119,7 @@ function skipMany0Parse<E, T>(stream: Stream<E>, parser: Parser<E, T>) {
     }
 }
 
-function many0<E, T>(parser: Parser<E, T>): Parser<E, T[]> {
+function many0P<E, T>(parser: Parser<E, T>): Parser<E, T[]> {
     return stream => {
         const result: T[] = []
         while (true) {
@@ -183,7 +129,7 @@ function many0<E, T>(parser: Parser<E, T>): Parser<E, T[]> {
         }
     }
 }
-function many1<E, T>(parser: Parser<E, T>): Parser<E, Array1<T>> {
+function many1P<E, T>(parser: Parser<E, T>): Parser<E, Array1<T>> {
     return stream => {
         const result: Array1<T> = [parser(stream)]
         while (true) {
@@ -193,7 +139,7 @@ function many1<E, T>(parser: Parser<E, T>): Parser<E, Array1<T>> {
         }
     }
 }
-function many1Fold<E, T, U>(parser: Parser<E, T>, init: () => U, folder: (state: U, value: T) => U): Parser<E, U> {
+function many1FoldP<E, T, U>(parser: Parser<E, T>, init: () => U, folder: (state: U, value: T) => U): Parser<E, U> {
     return stream => {
         let state = init()
         while (true) {
@@ -203,23 +149,23 @@ function many1Fold<E, T, U>(parser: Parser<E, T>, init: () => U, folder: (state:
         }
     }
 }
-function skipMany0<E, T>(parser: Parser<E, T>): Parser<E, null> {
+function skipMany0P<E, T>(parser: Parser<E, T>): Parser<E, null> {
     return stream => skipMany0Parse(stream, parser)
 }
-function skipMany1<E, T>(parser: Parser<E, T>): Parser<E, null> {
+function skipMany1P<E, T>(parser: Parser<E, T>): Parser<E, null> {
     return stream => (parser(stream), skipMany0Parse(stream, parser))
 }
-function sepBy1<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, Array1<T>> {
-    return pipe(parser, many0(right(sep, parser)), (x, xs) => (xs.unshift(x), xs as Array1<T>))
+function sepBy1P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, Array1<T>> {
+    return pipeP(parser, many0P(right(sep, parser)), (x, xs) => (xs.unshift(x), xs as Array1<T>))
 }
-function sepBy0<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, T[]> {
-    return map(opt(sepBy1(parser, sep)), xs => (xs === void 0) ? [] : xs)
+function sepBy0P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, T[]> {
+    return map(optP(sepBy1P(parser, sep)), xs => (xs === void 0) ? [] : xs)
 }
-function skipSepBy1<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, null> {
-    return right(parser, skipMany0(right(sep, parser)))
+function skipSepBy1P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, null> {
+    return right(parser, skipMany0P(right(sep, parser)))
 }
 
-function notFollowedBy<E, T>(parser: Parser<E, T>, label = "notFollowedBy"): Parser<E, null> {
+function notFollowedByP<E, T>(parser: Parser<E, T>, label = "notFollowedBy"): Parser<E, null> {
     return stream => (parseOpt(parser, stream) === void 0) ? null : error(label, stream)
 }
 function choiceParsers<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T> {
@@ -251,7 +197,7 @@ function choiceParsers<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T>
         return error(maxError, stream, maxPosition, maxLine, maxColumn)
     }
 }
-function skipped<T>(parser: Parser<CodePoint, T>): Parser<CodePoint, string> {
+function skippedP<T>(parser: Parser<CodePoint, T>): Parser<CodePoint, string> {
     return stream => {
         const { buffer: b, position: p } = stream
         parser(stream)
@@ -273,7 +219,7 @@ function skipped<T>(parser: Parser<CodePoint, T>): Parser<CodePoint, string> {
     }
 }
 
-function manyChars0<E>(parser: Parser<E, CodePoint>): Parser<E, string> {
+function manyChars0P<E>(parser: Parser<E, CodePoint>): Parser<E, string> {
     return stream => {
         const chars = []
         while (true) {
@@ -316,7 +262,7 @@ class CharStream extends StreamClass<CodePoint> {
     }
 }
 
-function runStream<E, T>(parser: Parser<E,T>, stream: Stream<E>) {
+function runStream<E, T>(parser: Parser<E, T>, stream: Stream<E>) {
     try {
         return parser(stream)
     }
@@ -324,61 +270,30 @@ function runStream<E, T>(parser: Parser<E,T>, stream: Stream<E>) {
         throw `(${stream.errorLine}, ${stream.errorColumn}): ${error}`
     }
 }
-function run<E, T>(parser: Parser<E, T>, array: ReadonlyArray<E>, source: string | null = null) {
+function parseP<E, T>(parser: Parser<E, T>, array: ReadonlyArray<E>, source: string | null = null) {
     return runStream(parser, new ArrayStream<E>(array, source))
 }
 
-function runString<T>(parser: Parser<CodePoint, T>, string: string, source: string | null = null) {
+function parseStringP<T>(parser: Parser<CodePoint, T>, string: string, source: string | null = null) {
     return runStream(parser, new CharStream(string, source))
 }
 
-function returnValue<E, T, U>(parser: Parser<E, T>, value: U): Parser<E, U> {
+function returnP<E, T, U>(parser: Parser<E, T>, value: U): Parser<E, U> {
     return stream => (parser(stream), value)
 }
 
 class CombinatorDefaults<E, T> implements Combinator<E, T> {
     constructor(public readonly parser: Parser<E, T>) { }
-    many0() { return extend(many0(this.parser)) }
-    many1() { return extend(many1(this.parser)) }
-    many1Fold<S>(init: () => S, folder: (state: S, value: T) => S) { return extend(many1Fold(this.parser, init, folder)) }
-    skipMany0() { return extend(skipMany0(this.parser)) }
-    skipMany1() { return extend(skipMany1(this.parser)) }
-    sepBy1<U>(sep: Combinator<E, U>) { return extend(sepBy1(this.parser, sep.parser)) }
-    sepBy0<U>(sep: Combinator<E, U>) { return extend(sepBy0(this.parser, sep.parser)) }
-    skipSepBy1<U>(sep: Combinator<E, U>) { return extend(skipSepBy1(this.parser, sep.parser)) }
     left<T2>(parser2: Combinator<E, T2>) { return extend(left(this.parser, parser2.parser)) }
     right<T2>(parser2: Combinator<E, T2>) { return extend(right(this.parser, parser2.parser)) }
-    notFollowedBy() { return extend(notFollowedBy(this.parser)) }
     map<U>(mapping: (x: T) => U) { return extend(map(this.parser, mapping)) }
-    opt() { return extend(opt(this.parser)) }
 
-    pipe<U>(...parserOrMappings: (Combinator<E, T> | ((...args: T[]) => U))[]): Combinator<E, U> {
-        const mapping = parserOrMappings.pop() as (...args: T[]) => U
-        const parsers = (parserOrMappings as Combinator<E, T>[]).map(c => c.parser)
-        parsers.unshift(this.parser)
-        return extend(pipeAny<E, T, U>(parsers, mapping))
-    }
-    
-    tuple(): Combinator<E, [T]>
-    tuple<T2>(parser2: Combinator<E, T2>): Combinator<E, [T, T2]>
-    tuple<T2, T3>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>): Combinator<E, [T, T2, T3]>
-    tuple<T2, T3, T4>(parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>): Combinator<E, [T, T2, T3, T4]>
-    tuple(...parsers: Combinator<E, T>[]): Combinator<E, T[]> {
-        const ps = parsers.map(c => c.parser)
-        ps.unshift(this.parser)
-        return extend(tupleAny<E, T>(ps))
-    }
-
-    return<U>(value: U) { return extend(returnValue(this.parser, value)) }
-
-    skipped(this: Combinator<CodePoint, T>) { return extend(skipped(this.parser)) }
-    manyChars0(this: Combinator<E, CodePoint>) { return extend(manyChars0(this.parser)) }
-
-    run(source: ReadonlyArray<E>) {
-        return run(this.parser, source)
-    }
-    runString(this: Combinator<CodePoint, T>, string: string, source: string | null = null) {
-        return runString(this.parser, string, source)
+    parse(this: Combinator<CodePoint, T>, string: string, source?: Nullable<string>): T
+    parse(array: ReadonlyArray<E>, source?: Nullable<string>): T
+    parse(this: Combinator<E | CodePoint, T>, stringOrArray: string | ReadonlyArray<E>, source: Nullable<string> = null): T {
+        return (typeof stringOrArray === "string")
+            ? parseStringP((this as Combinator<CodePoint, T>).parser, stringOrArray, source)
+            : parseP(this.parser, stringOrArray, source)
     }
 }
 
@@ -472,7 +387,7 @@ export function string(string: string) {
     })
 }
 
-function regexpEscape(s: string ) { return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') }
+function regexpEscape(s: string) { return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') }
 
 export function noneof(chars: string) {
     const target = ex.String.codePoints(chars)
@@ -570,3 +485,85 @@ export function createParserForwardedToRef<T, E = DefaultElement>(key: string): 
     })
     return [parser, cell]
 }
+
+
+export function many0<E, T>(c: Combinator<E, T>) { return extend(many0P(c.parser)) }
+export function many1<E, T>(c: Combinator<E, T>) { return extend(many1P(c.parser)) }
+export function many1Fold<E, T, S>(c: Combinator<E, T>, init: () => S, folder: (state: S, value: T) => S) { return extend(many1FoldP(c.parser, init, folder)) }
+export function skipMany0<E, T>(c: Combinator<E, T>) { return extend(skipMany0P(c.parser)) }
+export function skipMany1<E, T>(c: Combinator<E, T>) { return extend(skipMany1P(c.parser)) }
+export function sepBy1<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy1P(c.parser, sep.parser)) }
+export function sepBy0<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy0P(c.parser, sep.parser)) }
+export function skipSepBy1<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(skipSepBy1P(c.parser, sep.parser)) }
+export function notFollowedBy<E, T>(c: Combinator<E, T>) { return extend(notFollowedByP(c.parser)) }
+export function opt<E, T>(c: Combinator<E, T>) { return extend(optP(c.parser)) }
+
+// ```F#
+// for i in 0..15 do
+//    let m f = {1..i} |> Seq.map ((+) 1 >> f) |> String.concat "" 
+//    let f = sprintf >> m
+//    printfn "export function pipe<E, T1, %sU>(parser1: Combinator<E, T1>, %smapping: (x1: T1%s) => U): Combinator<E, U>"
+//        (f "T%d, ") (m <| fun n -> sprintf "parser%d: Combinator<E, T%d>, " n n)
+//        (m <| fun n -> sprintf ", x%d: T%d" n n)
+// ```
+export function pipe<E, T1, U>(parser1: Combinator<E, T1>, mapping: (x1: T1) => U): Combinator<E, U>
+export function pipe<E, T1, T2, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, mapping: (x1: T1, x2: T2) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, mapping: (x1: T1, x2: T2, x3:
+    T3) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4
+    >, mapping: (x1: T1, x2: T2, x3: T3, x4: T4) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E
+    , T4>, parser5: Combinator<E, T5>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14, x15: T15) => U): Combinator<E, U>
+export function pipe<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, U>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, parser16: Combinator<E, T16>, mapping: (x1: T1, x2: T2, x3: T3, x4: T4, x5: T5, x6: T6, x7: T7, x8: T8, x9: T9, x10: T10, x11: T11, x12: T12, x13: T13, x14: T14, x15: T15, x16: T16) => U): Combinator<E, U>
+export function pipe<E, T, U>(combinator: Combinator<E, T>, ...parserOrMappings: (Combinator<E, T> | ((...args: T[]) => U))[]): Combinator<E, U> {
+    const mapping = parserOrMappings.pop() as (...args: T[]) => U
+    const parsers = (parserOrMappings as Combinator<E, T>[]).map(c => c.parser)
+    parsers.unshift(combinator.parser)
+    return extend(pipeAny<E, T, U>(parsers, mapping))
+}
+
+// ```F#
+// for i in 0..15 do
+//     let g sep f = {1..i} |> Seq.map ((+) 1 >> f) |> String.concat sep
+//     printfn "export function tuple<E, T1%s>(parser1: Combinator<E, T1>%s): Combinator<E, [T1%s]>"
+//         (g "" <| sprintf ", T%d")
+//         (g "" <| fun n -> sprintf ", parser%d: Combinator<E, T%d>" n n)
+//         (g "" <| sprintf ", T%d")
+// ```
+export function tuple<E, T1>(parser1: Combinator<E, T1>): Combinator<E, [T1]>
+export function tuple<E, T1, T2>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>): Combinator<E, [T1, T2]>
+export function tuple<E, T1, T2, T3>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>): Combinator<E, [T1, T2, T3]>
+export function tuple<E, T1, T2, T3, T4>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>)
+    : Combinator<E, [T1, T2, T3, T4]>
+export function tuple<E, T1, T2, T3, T4, T5>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E,
+    T4>, parser5: Combinator<E, T5>): Combinator<E, [T1, T2, T3, T4, T5]>
+export function tuple<E, T1, T2, T3, T4, T5, T6>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>): Combinator<E, [T1, T2, T3, T4, T5, T6]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15]>
+export function tuple<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, parser16: Combinator<E, T16>): Combinator<E, [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16]>
+export function tuple<E, T>(parser1: Combinator<E, T>, ...parsers: Combinator<E, T>[]): Combinator<E, T[]> {
+    const ps = parsers.map(c => c.parser)
+    ps.unshift(parser1.parser)
+    return extend(tupleAny<E, T>(ps))
+}
+
+export function return_<E, T, U>(parser: Combinator<E, T>, value: U) { return extend(returnP(parser.parser, value)) }
+export function skipped<T>(parser: Combinator<CodePoint, T>) { return extend(skippedP(parser.parser)) }
+export function manyChars0<E>(parser: Combinator<E, CodePoint>) { return extend(manyChars0P(parser.parser)) }
