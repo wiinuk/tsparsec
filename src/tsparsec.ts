@@ -51,7 +51,7 @@ export interface Combinator<E, T> {
     right<U>(right: Combinator<E, U>): Combinator<E, U>
     map<U>(mapping: (value: T) => U): Combinator<E, U>
     return<U>(value: U): Combinator<E, U>
-
+    
     parse(this: Combinator<CodePoint, T>, string: string, source?: Nullable<string>): T
     parse(array: ReadonlyArray<E>, source?: Nullable<string>): T
 }
@@ -65,7 +65,7 @@ export function error<E>(message: string, stream: Stream<E>, position = stream.p
     throw message
 }
 
-function parseOpt<E, T>(parser: Parser<E, T>, stream: Stream<E>) {
+function parseOpt<E, T extends {} | null>(parser: Parser<E, T>, stream: Stream<E>) {
     const { position, line, column, errorPosition, errorLine, errorColumn } = stream
     try {
         const result = parser(stream)
@@ -114,13 +114,13 @@ function pipeP<E, T, U>(...parserOrMappings: (Parser<E, T> | ((...xs: T[]) => U)
     return pipeAny(parsers, mapping)
 }
 
-function skipMany0Parse<E, T>(stream: Stream<E>, parser: Parser<E, T>) {
+function skipMany0Parse<E, T extends {} | null>(stream: Stream<E>, parser: Parser<E, T>) {
     while (true) {
         if (parseOpt(parser, stream) === void 0) { return null }
     }
 }
 
-function many0P<E, T>(parser: Parser<E, T>): Parser<E, T[]> {
+function many0P<E, T extends {} | null>(parser: Parser<E, T>): Parser<E, T[]> {
     return stream => {
         const result: T[] = []
         while (true) {
@@ -130,7 +130,7 @@ function many0P<E, T>(parser: Parser<E, T>): Parser<E, T[]> {
         }
     }
 }
-function many1P<E, T>(parser: Parser<E, T>): Parser<E, Array1<T>> {
+function many1P<E, T extends {} | null>(parser: Parser<E, T>): Parser<E, Array1<T>> {
     return stream => {
         const result: Array1<T> = [parser(stream)]
         while (true) {
@@ -140,7 +140,7 @@ function many1P<E, T>(parser: Parser<E, T>): Parser<E, Array1<T>> {
         }
     }
 }
-function many1FoldP<E, T, U>(parser: Parser<E, T>, init: () => U, folder: (state: U, value: T) => U): Parser<E, U> {
+function many1FoldP<E, T extends {} | null, U>(parser: Parser<E, T>, init: () => U, folder: (state: U, value: T) => U): Parser<E, U> {
     return stream => {
         let state = init()
         while (true) {
@@ -150,23 +150,23 @@ function many1FoldP<E, T, U>(parser: Parser<E, T>, init: () => U, folder: (state
         }
     }
 }
-function skipMany0P<E, T>(parser: Parser<E, T>): Parser<E, null> {
+function skipMany0P<E, T extends {} | null>(parser: Parser<E, T>): Parser<E, null> {
     return stream => skipMany0Parse(stream, parser)
 }
-function skipMany1P<E, T>(parser: Parser<E, T>): Parser<E, null> {
+function skipMany1P<E, T extends {} | null>(parser: Parser<E, T>): Parser<E, null> {
     return stream => (parser(stream), skipMany0Parse(stream, parser))
 }
-function sepBy1P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, Array1<T>> {
+function sepBy1P<E, T extends {} | null, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, Array1<T>> {
     return pipeP(parser, many0P(right(sep, parser)), (x, xs) => (xs.unshift(x), xs as Array1<T>))
 }
-function sepBy0P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, T[]> {
+function sepBy0P<E, T extends {} | null, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, T[]> {
     return map(optP(sepBy1P(parser, sep)), xs => (xs === void 0) ? [] : xs)
 }
-function skipSepBy1P<E, T, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, null> {
+function skipSepBy1P<E, T extends {} | null, U>(parser: Parser<E, T>, sep: Parser<E, U>): Parser<E, null> {
     return right(parser, skipMany0P(right(sep, parser)))
 }
 
-function notFollowedByP<E, T>(parser: Parser<E, T>, label = "notFollowedBy"): Parser<E, null> {
+function notFollowedByP<E, T extends {} | null>(parser: Parser<E, T>, label = "notFollowedBy"): Parser<E, null> {
     return stream => (parseOpt(parser, stream) === void 0) ? null : error(label, stream)
 }
 function choiceParsers<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T> {
@@ -489,16 +489,16 @@ export function createParserForwardedToRef<T, E = DefaultElement>(key: string): 
 }
 
 
-export function many0<E, T>(c: Combinator<E, T>) { return extend(many0P(c.parser)) }
-export function many1<E, T>(c: Combinator<E, T>) { return extend(many1P(c.parser)) }
-export function many1Fold<E, T, S>(c: Combinator<E, T>, init: () => S, folder: (state: S, value: T) => S) { return extend(many1FoldP(c.parser, init, folder)) }
-export function skipMany0<E, T>(c: Combinator<E, T>) { return extend(skipMany0P(c.parser)) }
-export function skipMany1<E, T>(c: Combinator<E, T>) { return extend(skipMany1P(c.parser)) }
-export function sepBy1<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy1P(c.parser, sep.parser)) }
-export function sepBy0<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy0P(c.parser, sep.parser)) }
-export function skipSepBy1<E, T, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(skipSepBy1P(c.parser, sep.parser)) }
-export function notFollowedBy<E, T>(c: Combinator<E, T>) { return extend(notFollowedByP(c.parser)) }
-export function opt<E, T>(c: Combinator<E, T>) { return extend(optP(c.parser)) }
+export function many0<E, T extends null | {}>(c: Combinator<E, T>) { return extend(many0P(c.parser)) }
+export function many1<E, T extends null | {}>(c: Combinator<E, T>) { return extend(many1P(c.parser)) }
+export function many1Fold<E, T extends null | {}, S>(c: Combinator<E, T>, init: () => S, folder: (state: S, value: T) => S) { return extend(many1FoldP(c.parser, init, folder)) }
+export function skipMany0<E, T extends null | {}>(c: Combinator<E, T>) { return extend(skipMany0P(c.parser)) }
+export function skipMany1<E, T extends null | {}>(c: Combinator<E, T>) { return extend(skipMany1P(c.parser)) }
+export function sepBy1<E, T extends null | {}, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy1P(c.parser, sep.parser)) }
+export function sepBy0<E, T extends null | {}, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(sepBy0P(c.parser, sep.parser)) }
+export function skipSepBy1<E, T extends null | {}, S>(c: Combinator<E, T>, sep: Combinator<E, S>) { return extend(skipSepBy1P(c.parser, sep.parser)) }
+export function notFollowedBy<E, T extends null | {}>(c: Combinator<E, T>) { return extend(notFollowedByP(c.parser)) }
+export function opt<E, T extends null | {}>(c: Combinator<E, T>) { return extend(optP(c.parser)) }
 
 // ```F#
 // for i in 0..15 do
@@ -566,6 +566,5 @@ export function tuple<E, T>(parser1: Combinator<E, T>, ...parsers: Combinator<E,
     return extend(tupleAny<E, T>(ps))
 }
 
-export function return_<E, T, U>(parser: Combinator<E, T>, value: U) { return extend(returnP(parser.parser, value)) }
 export function skipped<T>(parser: Combinator<CodePoint, T>) { return extend(skippedP(parser.parser)) }
 export function manyChars0<E>(parser: Combinator<E, CodePoint>) { return extend(manyChars0P(parser.parser)) }
