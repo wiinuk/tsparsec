@@ -2,8 +2,6 @@ import { Optional, Array1, mixed, CodePoint, Nullable } from "wiinuk-extensions"
 import * as ex from "wiinuk-extensions"
 
 
-export type DefaultElement = CodePoint
-
 export interface BufferLike<E> extends Iterable<E> {
     readonly length: number
     readonly [index: number]: E
@@ -169,7 +167,7 @@ function skipSepBy1P<E, T extends {} | null, U>(parser: Parser<E, T>, sep: Parse
 function notFollowedByP<E, T extends {} | null>(parser: Parser<E, T>, label = "notFollowedBy"): Parser<E, null> {
     return stream => (parseOpt(parser, stream) === void 0) ? null : error(label, stream)
 }
-function choiceParsers<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T> {
+function choiceP<E, T>(parsers: ReadonlyArray<Parser<E, T>>): Parser<E, T> {
     return stream => {
         let { position: maxPosition, line: maxLine, column: maxColumn } = stream
         let maxError = ""
@@ -305,7 +303,7 @@ export function extend<E, T>(parser: Parser<E, T>): Combinator<E, T> {
 
 // combinators
 
-export function skipPipe<E = DefaultElement>(...parsers: Combinator<E, mixed>[]) {
+export function skipPipe<E>(...parsers: Combinator<E, mixed>[]) {
     return extend<E, null>(stream => {
         for (let i = 0; i < parsers.length; i++) {
             parsers[i].parser(stream)
@@ -314,8 +312,38 @@ export function skipPipe<E = DefaultElement>(...parsers: Combinator<E, mixed>[])
     })
 }
 
-export function choice<T, E = DefaultElement>(...parsers: Combinator<E, T>[]) {
-    return extend<E, T>(choiceParsers(parsers.map(p => p.parser)))
+export function choice(): Combinator<never, never>
+
+// ```js
+// /** min..step..max */
+// function* range({ min = 0, max = 0, step = 1 } = {}) {
+//     for (let x = min; x <= max; x += step) { yield x }
+// }
+// for (const n of range({ min: 1, max: 16 })) {
+//     const f = (/** @type { (x: number) => string } */ map, /** @type { string } */ sep) => Array.from(range({ min: 1, max: n })).map(map).join(sep)
+//     console.log(`export function choice<E, ${f(n => `T${n}`, ", ")}>(${f(n => `parser${n}: Combinator<E, T${n}>`, ", ")}): Combinator<E, ${f(n => `T${n}`, " | ")}>`)
+// }
+// ```
+export function choice<E, T1>(parser1: Combinator<E, T1>): Combinator<E, T1>
+export function choice<E, T1, T2>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>): Combinator<E, T1 | T2>
+export function choice<E, T1, T2, T3>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>): Combinator<E, T1 | T2 | T3>
+export function choice<E, T1, T2, T3, T4>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>): Combinator<E, T1 | T2 | T3 | T4>
+export function choice<E, T1, T2, T3, T4, T5>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>): Combinator<E, T1 | T2 | T3 | T4 | T5>
+export function choice<E, T1, T2, T3, T4, T5, T6>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11 | T12>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11 | T12 | T13>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11 | T12 | T13 | T14>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11 | T12 | T13 | T14 | T15>
+export function choice<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(parser1: Combinator<E, T1>, parser2: Combinator<E, T2>, parser3: Combinator<E, T3>, parser4: Combinator<E, T4>, parser5: Combinator<E, T5>, parser6: Combinator<E, T6>, parser7: Combinator<E, T7>, parser8: Combinator<E, T8>, parser9: Combinator<E, T9>, parser10: Combinator<E, T10>, parser11: Combinator<E, T11>, parser12: Combinator<E, T12>, parser13: Combinator<E, T13>, parser14: Combinator<E, T14>, parser15: Combinator<E, T15>, parser16: Combinator<E, T16>): Combinator<E, T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 | T11 | T12 | T13 | T14 | T15 | T16>
+export function choice<E, T>(...parsers: Combinator<E, T>[]): Combinator<E, T>
+
+export function choice<E, T>(...parsers: Combinator<E, T>[]) {
+    return extend<E, T>(choiceP(parsers.map(p => p.parser)))
 }
 
 // char parsers
@@ -334,7 +362,7 @@ export function char(target: CodePoint) {
     })
 }
 
-export function choose<T extends {} | null, E = DefaultElement>(chooser: (char: E) => Optional<T>, label = "choose") {
+export function choose<E, T extends {} | null>(chooser: (char: E) => Optional<T>, label = "choose") {
     return extend<E, T>(stream => {
         const { length, position } = stream
         if (length <= position) { return error(label, stream) }
@@ -348,7 +376,7 @@ export function choose<T extends {} | null, E = DefaultElement>(chooser: (char: 
     })
 }
 
-export function satisfy<E = DefaultElement>(predicate: (char: E) => boolean, label: string) {
+export function satisfy<E>(predicate: (char: E) => boolean, label: string) {
     return extend<E, E>(stream => {
         const { length, position } = stream
         if (length <= position) { return error(label, stream) }
@@ -468,7 +496,7 @@ function playSnapshot<E, T>(snapshot: Snapshot<T>, stream: Stream<E>) {
     return returnSnapshot(snapshot)
 }
 
-export function createParserForwardedToRef<T, E = DefaultElement>(key: string): [Combinator<E, T>, CombinatorCell<E, T>] {
+export function createParserForwardedToRef<E, T>(key: string): [Combinator<E, T>, CombinatorCell<E, T>] {
     const cell: CombinatorCell<E, T> = {
         parser: extend(() => { throw "createParserForwardedToRef: not initialized parser" })
     }
